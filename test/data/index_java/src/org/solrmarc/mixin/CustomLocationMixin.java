@@ -1164,7 +1164,6 @@ public class CustomLocationMixin extends SolrIndexerMixin
                 sb.append(member);
             }
             if (sb.length() == 0) sb.append(" : HIDDEN");
-            System.out.println(line + sb.toString());
         }
         reader.close();
     }
