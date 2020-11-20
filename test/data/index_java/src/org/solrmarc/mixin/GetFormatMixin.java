@@ -1764,6 +1764,7 @@ public class GetFormatMixin extends SolrIndexerMixin {
         NOTES,
         OBJECTS,
         OTHER;
+
         @Override
         public String toString() {
             return "SSBMediaType." + name();
@@ -1813,9 +1814,7 @@ public class GetFormatMixin extends SolrIndexerMixin {
         ControlField field008 = (ControlField) record.getVariableField("008");
         String data007 = (field007 != null && field007.getData() != null) ? field007.getData() : String.format("%030d", 0);
         String data008 = (field008 != null && field008.getData() != null) ? field008.getData() : String.format("%030d", 0);
-        // get main type and profile from leader/06
         switch (leader.charAt(6)) {
-            //Punktskrift: 000/6=a + 007/0=f eller 000/6=a + 008/23=f
             case 'a':
                 if (leader.charAt(7) == 's') {
                     if (data008.charAt(21) == 'n' || data008.charAt(21) == 'p') {
@@ -1823,7 +1822,7 @@ public class GetFormatMixin extends SolrIndexerMixin {
                     }
                 } else if (data007.charAt(0) == 'c' && data007.charAt(1) == 'r') {
                     return SSBMediaType.E_BOOK.toString();
-                } else if (data007.charAt(0) == 'f' || data008.charAt(23) == 'f')) {
+                } else if (data007.charAt(0) == 'f' || data008.charAt(23) == 'f') {
                     return SSBMediaType.BRAILLE.toString();
                 }
                 return SSBMediaType.BOOK.toString();
@@ -1869,7 +1868,7 @@ public class GetFormatMixin extends SolrIndexerMixin {
                     return SSBMediaType.GAME.toString();
                 }
                 break;
-            case 'p':
+            case 'o':
                 return SSBMediaType.COMBINED.toString();
             case 'r':
                 return SSBMediaType.OBJECTS.toString();
