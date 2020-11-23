@@ -3,6 +3,7 @@ package org.solrmarc.mixin.helper;
 public enum MediaTypeEnum {
     AUDIO_BOOK,
     AUDIO_BOOK_DAISY,
+    AUDIO_BOOK_DAISY_TEXT,
     BOOK,
     BRAILLE,
     COMBINED,

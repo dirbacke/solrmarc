@@ -144,7 +144,7 @@ public class SSBCustomMixin extends SolrIndexerMixin {
         if (mediaTypeInformation.getField007().charAt(0) == 'c' &&
                 mediaTypeInformation.getField007().charAt(1) == 'o' &&
                 isDaisy(mediaTypeInformation.getRecord().getVariableFields("500"))) {
-            return MediaTypeEnum.AUDIO_BOOK_DAISY.value();
+            return MediaTypeEnum.AUDIO_BOOK_DAISY_TEXT.value();
         } else if (mediaTypeInformation.getField007().charAt(0) == 'c' && mediaTypeInformation.getField007().charAt(1) == 'o') {
             return MediaTypeEnum.MULTIMEDIA.value();
         } else if (mediaTypeInformation.getField008().charAt(26) == 'g') {
