@@ -50,17 +50,16 @@ public class SSBCustomMixin extends SolrIndexerMixin {
      */
 
     public String getSSBMediaType(final Record record) {
-        MediaTypeInformation mediaTypeInformation = new MediaTypeInformation();
-        mediaTypeInformation.setRecord(record);
-        mediaTypeInformation.parseFields();
-        return parseOutMediaType(mediaTypeInformation);
+        MediaTypeInformation mediaInformation = new MediaTypeInformation();
+        mediaInformation.setRecord(record);
+        mediaInformation.parseFields();
+        return parseOutMediaType(mediaInformation);
     }
 
-    private String parseOutMediaType(MediaTypeInformation mediaTypeInformation) {
-        System.out.println("Leader field is " + mediaTypeInformation.getLeader());
-        switch (mediaTypeInformation.getLeader().charAt(6)) {
+    private String parseOutMediaType(MediaTypeInformation mediaInformation) {
+        switch (mediaInformation.getLeader().charAt(6)) {
             case 'a':
-                return parseFieldA(mediaTypeInformation);
+                return parseFieldA(mediaInformation);
             case 'c':
             case 'd':
                 return MediaTypeEnum.NOTES.value();
@@ -68,13 +67,13 @@ public class SSBCustomMixin extends SolrIndexerMixin {
             case 'f':
                 return MediaTypeEnum.MAPS.value();
             case 'i':
-                return parseFieldI(mediaTypeInformation);
+                return parseFieldI(mediaInformation);
             case 'g':
-                return parseFieldG(mediaTypeInformation);
+                return parseFieldG(mediaInformation);
             case 'j':
-                return parseFieldJ(mediaTypeInformation);
+                return parseFieldJ(mediaInformation);
             case 'm':
-                return parseFieldM(mediaTypeInformation);
+                return parseFieldM(mediaInformation);
             case 'o':
                 return MediaTypeEnum.COMBINED.value();
             case 'r':
@@ -85,29 +84,34 @@ public class SSBCustomMixin extends SolrIndexerMixin {
         return MediaTypeEnum.OTHER.value();
     }
 
-    private String parseFieldA(MediaTypeInformation mediaTypeInformation) {
-        if (mediaTypeInformation.getLeader().charAt(7) == 's') {
-            if (mediaTypeInformation.getField008().charAt(21) == 'n' || mediaTypeInformation.getField008().charAt(21) == 'p') {
+    private String parseFieldA(MediaTypeInformation mediaInformation) {
+        if (mediaInformation.getLeader().charAt(7) == 's') {
+            if (mediaInformation.isCharInPosField008('n', 21) || mediaInformation.isCharInPosField008('p', 21)) {
                 return MediaTypeEnum.MAGAZINE.value();
             }
-        } else if (mediaTypeInformation.getField007().charAt(0) == 'c' && mediaTypeInformation.getField007().charAt(1) == 'r') {
+        } else if (mediaInformation.isCharInPosField007('c', 0) && mediaInformation.isCharInPosField007('r', 1)) {
             return MediaTypeEnum.E_BOOK.value();
-        } else if (mediaTypeInformation.getField007().charAt(0) == 'f' || mediaTypeInformation.getField008().charAt(23) == 'f') {
+        } else if (mediaInformation.isCharInPosField007('f', 0) || mediaInformation.isCharInPosField008('f', 23)) {
             return MediaTypeEnum.BRAILLE.value();
         }
         return MediaTypeEnum.BOOK.value();
     }
 
-    private String parseFieldI(MediaTypeInformation mediaTypeInformation) {
-        if (mediaTypeInformation.getField007().charAt(0) == 'c' && mediaTypeInformation.getField007().charAt(1) == 'r') {
+    private String parseFieldI(MediaTypeInformation mediaInformation) {
+        if (mediaInformation.isCharInPosField007('c', 0) && mediaInformation.isCharInPosField007('r', 1)) {
             return MediaTypeEnum.E_AUDIO_BOOK.value();
         }
-        if (mediaTypeInformation.getField007().charAt(0) == 's' && mediaTypeInformation.getField007().charAt(1) == 'd') {
+        if ( isDaisy(mediaInformation.getField500()) &&
+                (mediaInformation.isCharInPosField007('c', 0) && mediaInformation.isCharInPosField007('o', 1)) ||
+                (mediaInformation.isCharInPosField007('s', 0) && mediaInformation.isCharInPosField007('d', 1)) ) {
+            return MediaTypeEnum.AUDIO_BOOK_DAISY.value();
+        }
+        if (mediaInformation.isCharInPosField007('s', 0) && mediaInformation.isCharInPosField007('d', 1)) {
             return MediaTypeEnum.AUDIO_BOOK.value();
         }
-        if (mediaTypeInformation.getField007().charAt(0) == 'c' &&
-                (mediaTypeInformation.getField007().charAt(1) == 'o' || mediaTypeInformation.getField007().charAt(1) == 'd') &&
-                isDaisy(mediaTypeInformation.getRecord().getVariableFields("500"))) {
+        if (mediaInformation.isCharInPosField007('c', 0) &&
+                (mediaInformation.isCharInPosField007('o', 1) || mediaInformation.isCharInPosField007('d', 1)) &&
+                isDaisy(mediaInformation.getField500())) {
             return MediaTypeEnum.AUDIO_BOOK_DAISY.value();
         }
         return MediaTypeEnum.OTHER.value();
@@ -123,32 +127,32 @@ public class SSBCustomMixin extends SolrIndexerMixin {
         return false;
     }
 
-    private String parseFieldG(MediaTypeInformation mediaTypeInformation) {
-        if (mediaTypeInformation.getField007().charAt(0) == 'c' && mediaTypeInformation.getField007().charAt(1) == 'r') {
+    private String parseFieldG(MediaTypeInformation mediaInformation) {
+        if (mediaInformation.isCharInPosField007('c', 0) && mediaInformation.isCharInPosField007('r', 1)) {
             return MediaTypeEnum.STREAMING_MOVIE.value();
-        } else if (mediaTypeInformation.getField007().charAt(0) == 'v' &&
-                (mediaTypeInformation.getField007().charAt(4) == 'v' || mediaTypeInformation.getField007().charAt(4) == 'b' || mediaTypeInformation.getField007().charAt(4) == 's')) {
+        } else if (mediaInformation.isCharInPosField007('v', 0) &&
+                (mediaInformation.isCharInPosField007('v', 4) || mediaInformation.isCharInPosField007('b', 4) || mediaInformation.isCharInPosField007('s', 4))) {
             return MediaTypeEnum.MOVIE.value();
         }
         return MediaTypeEnum.OTHER.value();
     }
 
-    private String parseFieldJ(MediaTypeInformation mediaTypeInformation) {
-        if (mediaTypeInformation.getField007().charAt(0) == 's' && mediaTypeInformation.getField007().charAt(1) == 'd') {
+    private String parseFieldJ(MediaTypeInformation mediaInformation) {
+        if (mediaInformation.isCharInPosField007('s', 0) && mediaInformation.isCharInPosField007('d', 1)) {
             return MediaTypeEnum.MUSIC.value();
         }
         return MediaTypeEnum.OTHER.value();
     }
 
-    private String parseFieldM(MediaTypeInformation mediaTypeInformation) {
-        if (mediaTypeInformation.getField007().charAt(0) == 'c' &&
-                mediaTypeInformation.getField007().charAt(1) == 'o' &&
-                isDaisy(mediaTypeInformation.getRecord().getVariableFields("500"))) {
+    private String parseFieldM(MediaTypeInformation mediaInformation) {
+        if (mediaInformation.isCharInPosField007('c', 0) &&
+                mediaInformation.isCharInPosField007('o', 1) &&
+                isDaisy(mediaInformation.getField500())) {
             return MediaTypeEnum.AUDIO_BOOK_DAISY_TEXT.value();
-        } else if (mediaTypeInformation.getField007().charAt(0) == 'c' && mediaTypeInformation.getField007().charAt(1) == 'o') {
-            return MediaTypeEnum.MULTIMEDIA.value();
-        } else if (mediaTypeInformation.getField008().charAt(26) == 'g') {
+        } else if (mediaInformation.isCharInPosField008('g', 26)) {
             return MediaTypeEnum.GAME.value();
+        } else if (mediaInformation.isCharInPosField007('c', 0) && mediaInformation.isCharInPosField007('o', 1)) {
+            return MediaTypeEnum.MULTIMEDIA.value();
         }
         return MediaTypeEnum.OTHER.value();
     }
