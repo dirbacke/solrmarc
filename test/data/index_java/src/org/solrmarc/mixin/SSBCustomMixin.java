@@ -101,9 +101,9 @@ public class SSBCustomMixin extends SolrIndexerMixin {
         if (mediaInformation.isCharInPosField007('c', 0) && mediaInformation.isCharInPosField007('r', 1)) {
             return MediaTypeEnum.E_AUDIO_BOOK.value();
         }
-        if ( isDaisy(mediaInformation.getField500()) &&
+        if ( isDaisy(mediaInformation.getField500()) && (
                 (mediaInformation.isCharInPosField007('c', 0) && mediaInformation.isCharInPosField007('o', 1)) ||
-                (mediaInformation.isCharInPosField007('s', 0) && mediaInformation.isCharInPosField007('d', 1)) ) {
+                (mediaInformation.isCharInPosField007('s', 0) && mediaInformation.isCharInPosField007('d', 1)) ) ) {
             return MediaTypeEnum.AUDIO_BOOK_DAISY.value();
         }
         if (mediaInformation.isCharInPosField007('s', 0) && mediaInformation.isCharInPosField007('d', 1)) {
