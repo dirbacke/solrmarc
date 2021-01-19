@@ -1,9 +1,9 @@
 package org.solrmarc.index.extractor;
 
+import org.marc4j.marc.Record;
+
 import java.util.ArrayList;
 import java.util.Collection;
-
-import org.marc4j.marc.Record;
 
 public abstract class AbstractMultiValueExtractor implements AbstractValueExtractor<Collection<String>>
 {

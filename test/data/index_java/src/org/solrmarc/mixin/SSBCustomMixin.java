@@ -10,6 +10,8 @@ import org.solrmarc.index.SolrIndexerMixin;
 
 import org.solrmarc.mixin.helper.MediaTypeEnum;
 import org.solrmarc.mixin.helper.MediaTypeInformation;
+import org.solrmarc.mixin.helper.MediaTypeParser;
+import org.solrmarc.mixin.helper.MediaSubTypeParser;
 
 public class SSBCustomMixin extends SolrIndexerMixin {
     /**
@@ -43,6 +45,20 @@ public class SSBCustomMixin extends SolrIndexerMixin {
     }
 
     /**
+     * Parse out media sub type from record
+     *
+     * @param record MARC Record
+     * @return <code>String</code> of media types
+     */
+
+    public String getSSBMediaSubType(final Record record) {
+        MediaTypeInformation mediaInformation = new MediaTypeInformation();
+        mediaInformation.setRecord(record);
+        mediaInformation.parseFields();
+        return parseOutMediaSubType(mediaInformation);
+    }
+
+    /**
      * Parse out media type from record
      *
      * @param record MARC Record
@@ -56,10 +72,11 @@ public class SSBCustomMixin extends SolrIndexerMixin {
         return parseOutMediaType(mediaInformation);
     }
 
-    private String parseOutMediaType(MediaTypeInformation mediaInformation) {
+    private String parseOutMediaSubType(MediaTypeInformation mediaInformation) {
+        MediaSubTypeParser mediaTypeParser = new MediaSubTypeParser();
         switch (mediaInformation.getLeader().charAt(6)) {
             case 'a':
-                return parseFieldA(mediaInformation);
+                return mediaTypeParser.parseFieldA(mediaInformation);
             case 'c':
             case 'd':
                 return MediaTypeEnum.NOTES.value();
@@ -67,13 +84,13 @@ public class SSBCustomMixin extends SolrIndexerMixin {
             case 'f':
                 return MediaTypeEnum.MAPS.value();
             case 'i':
-                return parseFieldI(mediaInformation);
+                return mediaTypeParser.parseFieldI(mediaInformation);
             case 'g':
-                return parseFieldG(mediaInformation);
+                return mediaTypeParser.parseFieldG(mediaInformation);
             case 'j':
-                return parseFieldJ(mediaInformation);
+                return mediaTypeParser.parseFieldJ(mediaInformation);
             case 'm':
-                return parseFieldM(mediaInformation);
+                return mediaTypeParser.parseFieldM(mediaInformation);
             case 'o':
                 return MediaTypeEnum.COMBINED.value();
             case 'r':
@@ -84,75 +101,30 @@ public class SSBCustomMixin extends SolrIndexerMixin {
         return MediaTypeEnum.OTHER.value();
     }
 
-    private String parseFieldA(MediaTypeInformation mediaInformation) {
-        if (mediaInformation.getLeader().charAt(7) == 's') {
-            if (mediaInformation.isCharInPosField008('n', 21) || mediaInformation.isCharInPosField008('p', 21)) {
-                return MediaTypeEnum.MAGAZINE.value();
-            }
-        } else if (mediaInformation.isCharInPosField007('c', 0) && mediaInformation.isCharInPosField007('r', 1)) {
-            return MediaTypeEnum.E_BOOK.value();
-        } else if (mediaInformation.isCharInPosField007('f', 0) || mediaInformation.isCharInPosField008('f', 23)) {
-            return MediaTypeEnum.BRAILLE.value();
-        }
-        return MediaTypeEnum.BOOK.value();
-    }
-
-    private String parseFieldI(MediaTypeInformation mediaInformation) {
-        if (mediaInformation.isCharInPosField007('c', 0) && mediaInformation.isCharInPosField007('r', 1)) {
-            return MediaTypeEnum.E_AUDIO_BOOK.value();
-        }
-        if ( isDaisy(mediaInformation.getField500()) && (
-                (mediaInformation.isCharInPosField007('c', 0) && mediaInformation.isCharInPosField007('o', 1)) ||
-                (mediaInformation.isCharInPosField007('s', 0) && mediaInformation.isCharInPosField007('d', 1)) ) ) {
-            return MediaTypeEnum.AUDIO_BOOK_DAISY.value();
-        }
-        if (mediaInformation.isCharInPosField007('s', 0) && mediaInformation.isCharInPosField007('d', 1)) {
-            return MediaTypeEnum.AUDIO_BOOK.value();
-        }
-        if (mediaInformation.isCharInPosField007('c', 0) &&
-                (mediaInformation.isCharInPosField007('o', 1) || mediaInformation.isCharInPosField007('d', 1)) &&
-                isDaisy(mediaInformation.getField500())) {
-            return MediaTypeEnum.AUDIO_BOOK_DAISY.value();
-        }
-        return MediaTypeEnum.OTHER.value();
-    }
-
-    private boolean isDaisy(List<VariableField> fields500) {
-        for (VariableField field : fields500) {
-            String data = ((DataField) field).getSubfield('a') != null ?
-                    ((DataField) field).getSubfield('a').getData() : "";
-            if (data.toUpperCase().contains("DAISY"))
-                return true;
-        }
-        return false;
-    }
-
-    private String parseFieldG(MediaTypeInformation mediaInformation) {
-        if (mediaInformation.isCharInPosField007('c', 0) && mediaInformation.isCharInPosField007('r', 1)) {
-            return MediaTypeEnum.STREAMING_MOVIE.value();
-        } else if (mediaInformation.isCharInPosField007('v', 0) &&
-                (mediaInformation.isCharInPosField007('v', 4) || mediaInformation.isCharInPosField007('b', 4) || mediaInformation.isCharInPosField007('s', 4))) {
-            return MediaTypeEnum.MOVIE.value();
-        }
-        return MediaTypeEnum.OTHER.value();
-    }
-
-    private String parseFieldJ(MediaTypeInformation mediaInformation) {
-        if (mediaInformation.isCharInPosField007('s', 0) && mediaInformation.isCharInPosField007('d', 1)) {
-            return MediaTypeEnum.MUSIC.value();
-        }
-        return MediaTypeEnum.OTHER.value();
-    }
-
-    private String parseFieldM(MediaTypeInformation mediaInformation) {
-        if (mediaInformation.isCharInPosField007('c', 0) &&
-                mediaInformation.isCharInPosField007('o', 1) &&
-                isDaisy(mediaInformation.getField500())) {
-            return MediaTypeEnum.AUDIO_BOOK_DAISY_TEXT.value();
-        } else if (mediaInformation.isCharInPosField008('g', 26)) {
-            return MediaTypeEnum.GAME.value();
-        } else if (mediaInformation.isCharInPosField007('c', 0) && mediaInformation.isCharInPosField007('o', 1)) {
-            return MediaTypeEnum.MULTIMEDIA.value();
+    private String parseOutMediaType(MediaTypeInformation mediaInformation) {
+        MediaTypeParser mediaTypeParser = new MediaTypeParser();
+        switch (mediaInformation.getLeader().charAt(6)) {
+            case 'a':
+                return mediaTypeParser.parseFieldA(mediaInformation);
+            case 'c':
+            case 'd':
+            case 'e':
+            case 'f':
+                return MediaTypeEnum.BOOK.value();
+            case 'i':
+                return mediaTypeParser.parseFieldI(mediaInformation);
+            case 'g':
+                return mediaTypeParser.parseFieldG(mediaInformation);
+            case 'j':
+                return mediaTypeParser.parseFieldJ(mediaInformation);
+            case 'm':
+                return mediaTypeParser.parseFieldM(mediaInformation);
+            case 'o':
+                return MediaTypeEnum.COMBINED.value();
+            case 'r':
+                return MediaTypeEnum.OBJECTS.value();
+            default:
+                break;
         }
         return MediaTypeEnum.OTHER.value();
     }
