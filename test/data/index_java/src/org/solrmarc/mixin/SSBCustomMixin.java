@@ -1,6 +1,7 @@
 package org.solrmarc.mixin;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
@@ -70,6 +71,28 @@ public class SSBCustomMixin extends SolrIndexerMixin {
         mediaInformation.setRecord(record);
         mediaInformation.parseFields();
         return parseOutMediaType(mediaInformation);
+    }
+
+    public String getSSBPublisherName(final Record record) {
+        MediaTypeInformation mediaInformation = new MediaTypeInformation(record);
+        String value = mediaInformation.getFieldContent("260", 'b');
+        if (null == value || "".equals(value)){
+            return mediaInformation.getFieldContent("264", 'b');
+        }
+        return value;
+    }
+
+    public Set<String> getSSBSubjectWithType(final Record record) {
+        MediaTypeInformation mediaInformation = new MediaTypeInformation(record);
+        List<String> fields = Arrays.asList("600", "610", "630", "648", "650", "651", "697");
+        Set<String> values = new HashSet<>();
+        for (int i=0; i < fields.size(); i++) {
+            Set<String> content = mediaInformation.getFieldContentWithType(fields.get(i));
+            if (!content.isEmpty()) {
+                values.addAll(content);
+            }
+        }
+        return values;
     }
 
     private String parseOutMediaSubType(MediaTypeInformation mediaInformation) {

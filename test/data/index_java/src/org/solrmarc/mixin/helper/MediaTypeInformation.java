@@ -1,7 +1,9 @@
 package org.solrmarc.mixin.helper;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
@@ -13,6 +15,12 @@ public class MediaTypeInformation {
     private String leader;
     private String field007;
     private String field008;
+
+    public MediaTypeInformation() {}
+
+    public MediaTypeInformation(Record record) {
+        this.record = record;
+    }
 
     public void parseFields() {
         this.leader = this.record.getLeader().toString();
@@ -58,55 +66,97 @@ public class MediaTypeInformation {
         this.field007 = field007;
     }
 
+    public String getFieldContent(String fieldNumber, char subField) {
+        return getSubfield(fieldNumber, subField);
+    }
+
+    public Set<String> getFieldContentWithType(String fieldNumber) {
+        return getSubfieldAsSet(fieldNumber);
+    }
+
     public boolean isMp3() {
-        String field300 = getSubfield("300", 'a');
-        String field939b = getSubfield("939", 'b');
+        String field300 = getLowerCaseSubfield("300", 'a');
+        String field939b = getLowerCaseSubfield("939", 'b');
         return (field300.toLowerCase().indexOf("mp3") != -1 || field939b.toLowerCase().indexOf("mp3") != -1);
     }
 
     public boolean isEasyToRead() {
-        String field655a = getSubfield("655", 'a');
-        String field697a = getSubfield("697", 'c');
+        String field655a = getLowerCaseSubfield("655", 'a');
+        String field697a = getLowerCaseSubfield("697", 'c');
         String compareString = "lättläst";
         return (field655a.indexOf(compareString) != -1 || field697a.indexOf(compareString) != -1 );
     }
 
     public boolean isAnnouncedMedia(String compareString) {
         compareString = compareString.toLowerCase(Locale.forLanguageTag("sv-SE"));
-        String field596b = getSubfield("596", 'b');
-        String field500a = getSubfield("500", 'a');
+        String field596b = getLowerCaseSubfield("596", 'b');
+        String field500a = getLowerCaseSubfield("500", 'a');
         return (field596b.indexOf(compareString) != -1 || field500a.indexOf(compareString) != -1);
     }
 
     public boolean isAnnouncedGame(String compareString) {
         compareString = compareString.toLowerCase(Locale.forLanguageTag("sv-SE"));
-        String field538a = getSubfield("538", 'a');
+        String field538a = getLowerCaseSubfield("538", 'a');
         return (field538a.indexOf(compareString) != -1);
     }
 
     public boolean isPocket() {
-        String field020q = getSubfield("020", 'q');
+        String field020q = getLowerCaseSubfield("020", 'q');
         String compareString = "pocket";
         return (field020q.indexOf(compareString) != -1);
     }
 
     public boolean isLargeScale() {
-        String field250a = getSubfield("250", 'a');
-        String field340n = getSubfield("340", 'n');
+        String field250a = getLowerCaseSubfield("250", 'a');
+        String field340n = getLowerCaseSubfield("340", 'n');
         String largeScale = "storstil", largeScaleSpace = "stor stil";
         return field250a.indexOf(largeScale) != -1 || field340n.indexOf(largeScaleSpace) != -1;
     }
 
-    private String getSubfield(String field, char section) {
-       String data = "";
+    private Set<String> getSubfieldAsSet(String field) {
+       Set<String> data = new HashSet<>();
        for (VariableField variableField : record.getVariableFields(field)) {
-           if(((DataField) variableField).getSubfield(section) != null) {
-               if(((DataField) variableField).getSubfield(section).getData() != null) {
-                   data += ((DataField) variableField).getSubfield(section).getData().toLowerCase(Locale.forLanguageTag("sv-SE"));
+           String fieldData = "";
+           for ( char section : "abcdefghijklmnopqrstuvwxyz".toCharArray()) {
+               if(((DataField) variableField).getSubfield(section) != null) {
+                   if (((DataField) variableField).getSubfield(section).getData() != null) {
+                       fieldData += ((DataField) variableField).getSubfield(section).getData() + " ";
+                   }
                }
            }
+           String type = "";
+           if (((DataField) variableField).getSubfield('2') != null) {
+               type = ((DataField) variableField).getSubfield('2').getData();
+               if (!type.isEmpty()) {
+                   type = " -- " + type;
+               }
+           }
+           data.add(fieldData + type);
        }
        return data;
+    }
 
+    private String getSubfield(String field, char section) {
+        String data = "";
+        for (VariableField variableField : record.getVariableFields(field)) {
+            if(((DataField) variableField).getSubfield(section) != null) {
+                if(((DataField) variableField).getSubfield(section).getData() != null) {
+                    data += ((DataField) variableField).getSubfield(section).getData();
+                }
+            }
+        }
+        return data;
+    }
+
+    private String getLowerCaseSubfield(String field, char section) {
+        String data = "";
+        for (VariableField variableField : record.getVariableFields(field)) {
+            if(((DataField) variableField).getSubfield(section) != null) {
+                if(((DataField) variableField).getSubfield(section).getData() != null) {
+                    data += ((DataField) variableField).getSubfield(section).getData().toLowerCase(Locale.forLanguageTag("sv-SE"));
+                }
+            }
+        }
+        return data;
     }
 }
