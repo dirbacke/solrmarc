@@ -82,17 +82,75 @@ public class SSBCustomMixin extends SolrIndexerMixin {
         return value;
     }
 
-    public Set<String> getSSBSubjectWithType(final Record record) {
+    public Set<String> getSSBSubject(final Record record) {
         MediaTypeInformation mediaInformation = new MediaTypeInformation(record);
         List<String> fields = Arrays.asList("600", "610", "630", "648", "650", "651", "697");
         Set<String> values = new HashSet<>();
+        char[] sections = "abcdefghijklmnopqrstuvwxyz".toCharArray();
         for (int i=0; i < fields.size(); i++) {
-            Set<String> content = mediaInformation.getFieldContentWithType(fields.get(i));
+            Set<String> content = mediaInformation.getFieldContentForSubject(fields.get(i), sections);
             if (!content.isEmpty()) {
                 values.addAll(content);
             }
         }
-        return values;
+        return parseOutFictionalPersons(values);
+    }
+
+    public Set<String> getSSBSubjectWithType(final Record record) {
+        MediaTypeInformation mediaInformation = new MediaTypeInformation(record);
+        List<String> fields = Arrays.asList("600", "610", "630", "648", "650", "651", "697");
+        Set<String> values = new HashSet<>();
+        char[] sections = "abcdefghijklmnopqrstuvwxyz".toCharArray();
+        for (int i=0; i < fields.size(); i++) {
+            Set<String> content = mediaInformation.getFieldContentWithType(fields.get(i), sections);
+            if (!content.isEmpty()) {
+                values.addAll(content);
+            }
+        }
+
+        return parseOutFictionalPersons(values);
+    }
+
+    public Set<String> getSSBFictionalPerson(final Record record) {
+        MediaTypeInformation mediaInformation = new MediaTypeInformation(record);
+        List<String> fields = Arrays.asList("600", "697");
+        Set<String> values = new HashSet<>();
+        char[] sections = "ac".toCharArray();
+        for (int i=0; i < fields.size(); i++) {
+            Set<String> content = mediaInformation.getFieldContentForSubject(fields.get(i), sections);
+            if (!content.isEmpty()) {
+                values.addAll(content);
+            }
+        }
+        return parseOnlyFictionalPersons(values);
+    }
+
+    public Set<String> getSSBCoAuthors(final Record record) {
+        MediaTypeInformation mediaTypeInformation = new MediaTypeInformation(record);
+        String fieldNumber = "700";
+        char[] sections = "abcdeq".toCharArray();
+        return mediaTypeInformation.getFieldContentWithCoAuthors(fieldNumber, sections);
+    }
+
+    public Set<String> getSSBIllustrators(final Record record) {
+        MediaTypeInformation mediaTypeInformation = new MediaTypeInformation(record);
+        String fieldNumber = "700";
+        char[] sections = "abcdeq".toCharArray();
+        return mediaTypeInformation.getFieldContentWithIllustrators(fieldNumber, sections);
+    }
+
+    public Set<String> getSSBTranslators(final Record record) {
+        MediaTypeInformation mediaTypeInformation = new MediaTypeInformation(record);
+        String fieldNumber = "700";
+        char[] sections = "abcdeq".toCharArray();
+        return mediaTypeInformation.getFieldContentWithTranslators(fieldNumber, sections);
+    }
+
+    public Set<String> getSSBOtherAuthors(final Record record) {
+        MediaTypeInformation mediaTypeInformation = new MediaTypeInformation(record);
+        String fieldNumber = "700";
+        char[] sections = "abcdeq".toCharArray();
+        return mediaTypeInformation.getFieldContentWithOtherAuthors(fieldNumber, sections);
     }
 
     private String parseOutMediaSubType(MediaTypeInformation mediaInformation) {
@@ -150,5 +208,27 @@ public class SSBCustomMixin extends SolrIndexerMixin {
                 break;
         }
         return MediaTypeEnum.OTHER.value();
+    }
+
+    private Set<String> parseOutFictionalPersons(Set<String> values) {
+        Set<String> subjects = new HashSet<>();
+        subjects.addAll(values.stream().filter(Objects::nonNull).map(value-> {
+            if (value.contains("fiktiv")) {
+                return null;
+            }
+            return value;
+        }).filter(Objects::nonNull).collect(Collectors.toList()));
+        return subjects;
+    }
+
+    private Set<String> parseOnlyFictionalPersons(Set<String> values) {
+        Set<String> subjects = new HashSet<>();
+        subjects.addAll(values.stream().filter(Objects::nonNull).map(value-> {
+            if (value.contains("fiktiv")) {
+                return value;
+            }
+            return null;
+        }).filter(Objects::nonNull).collect(Collectors.toList()));
+        return subjects;
     }
 }

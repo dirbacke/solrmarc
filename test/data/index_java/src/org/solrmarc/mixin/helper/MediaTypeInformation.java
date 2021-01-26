@@ -70,8 +70,28 @@ public class MediaTypeInformation {
         return getSubfield(fieldNumber, subField);
     }
 
-    public Set<String> getFieldContentWithType(String fieldNumber) {
-        return getSubfieldAsSet(fieldNumber);
+    public Set<String> getFieldContentForSubject(String fieldNumber, char[] sections) {
+        return getSubfieldWithSubjectAsSet(fieldNumber, sections);
+    }
+
+    public Set<String> getFieldContentWithType(String fieldNumber, char[] sections) {
+        return getSubfieldWithTypeAsSet(fieldNumber, sections);
+    }
+
+    public Set<String> getFieldContentWithCoAuthors(String fieldNumber, char[] sections) {
+        return getSubfieldWithOtherAuthorAsSet(fieldNumber, sections, "aut");
+    }
+
+    public Set<String> getFieldContentWithIllustrators(String fieldNumber, char[] sections) {
+        return getSubfieldWithOtherAuthorAsSet(fieldNumber, sections, "ill");
+    }
+
+    public Set<String> getFieldContentWithTranslators(String fieldNumber, char[] sections) {
+        return getSubfieldWithOtherAuthorAsSet(fieldNumber, sections, "trl");
+    }
+
+    public Set<String> getFieldContentWithOtherAuthors(String fieldNumber, char[] sections) {
+        return getSubfieldWithOtherAuthorAsSet(fieldNumber, sections, "");
     }
 
     public boolean isMp3() {
@@ -113,17 +133,19 @@ public class MediaTypeInformation {
         return field250a.indexOf(largeScale) != -1 || field340n.indexOf(largeScaleSpace) != -1;
     }
 
-    private Set<String> getSubfieldAsSet(String field) {
+    private Set<String> getSubfieldWithSubjectAsSet(String field, char[] sections) {
+        Set<String> data = new HashSet<>();
+        for (VariableField variableField : record.getVariableFields(field)) {
+            data.add(getFieldData((DataField) variableField, sections));
+        }
+        return data;
+    }
+
+    private Set<String> getSubfieldWithTypeAsSet(String field, char[] sections) {
        Set<String> data = new HashSet<>();
        for (VariableField variableField : record.getVariableFields(field)) {
-           String fieldData = "";
-           for ( char section : "abcdefghijklmnopqrstuvwxyz".toCharArray()) {
-               if(((DataField) variableField).getSubfield(section) != null) {
-                   if (((DataField) variableField).getSubfield(section).getData() != null) {
-                       fieldData += ((DataField) variableField).getSubfield(section).getData() + " ";
-                   }
-               }
-           }
+           String fieldData = getFieldData((DataField) variableField, sections);
+
            String type = "";
            if (((DataField) variableField).getSubfield('2') != null) {
                type = ((DataField) variableField).getSubfield('2').getData();
@@ -131,9 +153,26 @@ public class MediaTypeInformation {
                    type = " -- " + type;
                }
            }
-           data.add(fieldData + type);
+           data.add(fieldData.trim() + type);
        }
        return data;
+    }
+
+    private Set<String> getSubfieldWithOtherAuthorAsSet(String field, char[] sections, String key) {
+        Set<String> data = new HashSet<>();
+        boolean isOtherKey = !"aut".equals(key) && !"trl".equals(key) && !"ill".equals(key);
+        for (VariableField variableField : record.getVariableFields(field)) {
+            String fieldData = getFieldData((DataField) variableField, sections);
+            if (((DataField) variableField).getSubfield('4') != null) {
+                String type = ((DataField) variableField).getSubfield('4').getData();
+                if (key.equalsIgnoreCase(type) || isOtherKey) {
+                    data.add(fieldData.trim());
+                }
+            } else if (isOtherKey) {
+                data.add(fieldData.trim());
+            }
+        }
+        return data;
     }
 
     private String getSubfield(String field, char section) {
@@ -158,5 +197,17 @@ public class MediaTypeInformation {
             }
         }
         return data;
+    }
+
+    private String getFieldData(DataField field, char[] sections) {
+        String fieldData = "";
+        for ( char section : sections) {
+            if(field.getSubfield(section) != null) {
+                if (field.getSubfield(section).getData() != null) {
+                    fieldData += field.getSubfield(section).getData() + " ";
+                }
+            }
+        }
+        return fieldData.trim();
     }
 }
