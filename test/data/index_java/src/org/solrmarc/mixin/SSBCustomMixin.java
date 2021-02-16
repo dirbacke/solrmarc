@@ -125,34 +125,6 @@ public class SSBCustomMixin extends SolrIndexerMixin {
         return parseOnlyFictionalPersons(values);
     }
 
-    public Set<String> getSSBCoAuthors(final Record record) {
-        MediaTypeInformation mediaTypeInformation = new MediaTypeInformation(record);
-        String fieldNumber = "700";
-        char[] sections = "abcdeq".toCharArray();
-        return mediaTypeInformation.getFieldContentWithCoAuthors(fieldNumber, sections);
-    }
-
-    public Set<String> getSSBIllustrators(final Record record) {
-        MediaTypeInformation mediaTypeInformation = new MediaTypeInformation(record);
-        String fieldNumber = "700";
-        char[] sections = "abcdeq".toCharArray();
-        return mediaTypeInformation.getFieldContentWithIllustrators(fieldNumber, sections);
-    }
-
-    public Set<String> getSSBTranslators(final Record record) {
-        MediaTypeInformation mediaTypeInformation = new MediaTypeInformation(record);
-        String fieldNumber = "700";
-        char[] sections = "abcdeq".toCharArray();
-        return mediaTypeInformation.getFieldContentWithTranslators(fieldNumber, sections);
-    }
-
-    public Set<String> getSSBOtherAuthors(final Record record) {
-        MediaTypeInformation mediaTypeInformation = new MediaTypeInformation(record);
-        String fieldNumber = "700";
-        char[] sections = "abcdeq".toCharArray();
-        return mediaTypeInformation.getFieldContentWithOtherAuthors(fieldNumber, sections);
-    }
-
     private String parseOutMediaSubType(MediaTypeInformation mediaInformation) {
         MediaSubTypeParser mediaTypeParser = new MediaSubTypeParser();
         switch (mediaInformation.getLeader().charAt(6)) {

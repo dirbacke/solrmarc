@@ -78,22 +78,6 @@ public class MediaTypeInformation {
         return getSubfieldWithTypeAsSet(fieldNumber, sections);
     }
 
-    public Set<String> getFieldContentWithCoAuthors(String fieldNumber, char[] sections) {
-        return getSubfieldWithOtherAuthorAsSet(fieldNumber, sections, "aut");
-    }
-
-    public Set<String> getFieldContentWithIllustrators(String fieldNumber, char[] sections) {
-        return getSubfieldWithOtherAuthorAsSet(fieldNumber, sections, "ill");
-    }
-
-    public Set<String> getFieldContentWithTranslators(String fieldNumber, char[] sections) {
-        return getSubfieldWithOtherAuthorAsSet(fieldNumber, sections, "trl");
-    }
-
-    public Set<String> getFieldContentWithOtherAuthors(String fieldNumber, char[] sections) {
-        return getSubfieldWithOtherAuthorAsSet(fieldNumber, sections, "");
-    }
-
     public boolean isMp3() {
         String field300 = getLowerCaseSubfield("300", 'a');
         String field939b = getLowerCaseSubfield("939", 'b');
@@ -156,23 +140,6 @@ public class MediaTypeInformation {
            data.add(fieldData.trim() + type);
        }
        return data;
-    }
-
-    private Set<String> getSubfieldWithOtherAuthorAsSet(String field, char[] sections, String key) {
-        Set<String> data = new HashSet<>();
-        boolean isOtherKey = !"aut".equals(key) && !"trl".equals(key) && !"ill".equals(key);
-        for (VariableField variableField : record.getVariableFields(field)) {
-            String fieldData = getFieldData((DataField) variableField, sections);
-            if (((DataField) variableField).getSubfield('4') != null) {
-                String type = ((DataField) variableField).getSubfield('4').getData();
-                if (key.equalsIgnoreCase(type) || isOtherKey) {
-                    data.add(fieldData.trim());
-                }
-            } else if (isOtherKey) {
-                data.add(fieldData.trim());
-            }
-        }
-        return data;
     }
 
     private String getSubfield(String field, char section) {

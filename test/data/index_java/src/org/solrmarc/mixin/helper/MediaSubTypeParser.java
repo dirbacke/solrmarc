@@ -49,12 +49,12 @@ public class MediaSubTypeParser {
         if (mediaInformation.isCharInPosField007('c', 0) && mediaInformation.isCharInPosField007('r', 1) && mediaInformation.isEasyToRead()) {
             return MediaTypeEnum.E_AUDIO_BOOK_EASY_TO_READ.value();
         }
-        if (mediaInformation.isCharInPosField007('c', 0) && mediaInformation.isCharInPosField007('r', 1)) {
+        boolean isEAudioBook = mediaInformation.isCharInPosField007('c', 0) && mediaInformation.isCharInPosField007('r', 1);
+        boolean isEAudioBookAndDaisy = (mediaInformation.isCharInPosField007('s', 0) && mediaInformation.isCharInPosField007('d', 1));
+        if (isEAudioBook) {
             return MediaTypeEnum.E_AUDIO_BOOK.value();
         }
-        if ( isDaisy(mediaInformation.getField500()) && (
-                (mediaInformation.isCharInPosField007('c', 0) && mediaInformation.isCharInPosField007('o', 1)) ||
-                        (mediaInformation.isCharInPosField007('s', 0) && mediaInformation.isCharInPosField007('d', 1)) ) ) {
+        if (isDaisy(mediaInformation.getField500()) && (isEAudioBook || isEAudioBookAndDaisy)) {
             return MediaTypeEnum.AUDIO_BOOK_DAISY.value();
         }
         if (mediaInformation.isCharInPosField007('s', 0) && mediaInformation.isCharInPosField007('d', 1)) {
