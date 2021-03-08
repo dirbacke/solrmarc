@@ -51,7 +51,6 @@ public class SSBCustomMixin extends SolrIndexerMixin {
      * @param record MARC Record
      * @return <code>String</code> of media types
      */
-
     public String getSSBMediaSubType(final Record record) {
         MediaTypeInformation mediaInformation = new MediaTypeInformation();
         mediaInformation.setRecord(record);
@@ -65,7 +64,6 @@ public class SSBCustomMixin extends SolrIndexerMixin {
      * @param record MARC Record
      * @return <code>String</code> of media types
      */
-
     public String getSSBMediaType(final Record record) {
         MediaTypeInformation mediaInformation = new MediaTypeInformation();
         mediaInformation.setRecord(record);
@@ -109,20 +107,6 @@ public class SSBCustomMixin extends SolrIndexerMixin {
         }
 
         return parseOutFictionalPersons(values);
-    }
-
-    public Set<String> getSSBFictionalPerson(final Record record) {
-        MediaTypeInformation mediaInformation = new MediaTypeInformation(record);
-        List<String> fields = Arrays.asList("600", "697");
-        Set<String> values = new HashSet<>();
-        char[] sections = "ac".toCharArray();
-        for (int i=0; i < fields.size(); i++) {
-            Set<String> content = mediaInformation.getFieldContentForSubject(fields.get(i), sections);
-            if (!content.isEmpty()) {
-                values.addAll(content);
-            }
-        }
-        return parseOnlyFictionalPersons(values);
     }
 
     private String parseOutMediaSubType(MediaTypeInformation mediaInformation) {
@@ -189,17 +173,6 @@ public class SSBCustomMixin extends SolrIndexerMixin {
                 return null;
             }
             return value;
-        }).filter(Objects::nonNull).collect(Collectors.toList()));
-        return subjects;
-    }
-
-    private Set<String> parseOnlyFictionalPersons(Set<String> values) {
-        Set<String> subjects = new HashSet<>();
-        subjects.addAll(values.stream().filter(Objects::nonNull).map(value-> {
-            if (value.contains("fiktiv")) {
-                return value;
-            }
-            return null;
         }).filter(Objects::nonNull).collect(Collectors.toList()));
         return subjects;
     }

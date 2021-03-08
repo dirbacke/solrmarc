@@ -1,0 +1,53 @@
+package org.solrmarc.mixin.ssb;
+
+import org.solrmarc.index.SolrIndexerMixin;
+import org.marc4j.marc.Record;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class FictionalMixin extends SolrIndexerMixin {
+
+    public Set<String> getFictionalPerson(final Record record) {
+        org.solrmarc.mixin.helper.MediaTypeInformation mediaInformation = new org.solrmarc.mixin.helper.MediaTypeInformation(record);
+        List<String> fields = Arrays.asList("600", "697");
+        Set<String> values = new HashSet<>();
+        char[] sections = "ac".toCharArray();
+        for (int i=0; i < fields.size(); i++) {
+            Set<String> content = mediaInformation.getFieldContentForSubject(fields.get(i), sections);
+            if (!content.isEmpty()) {
+                values.addAll(content);
+            }
+        }
+        return parseOnlyFictionalPersons(values);
+    }
+
+    private Set<String> parseOnlyFictionalPersons(Set<String> values) {
+        Set<String> subjects = new HashSet<>();
+        subjects.addAll(values.stream().filter(Objects::nonNull)
+                .map(value-> {
+                    if (value.contains("fiktiv")) {
+                        return value;
+                    }
+                    return null;
+                }).filter(Objects::nonNull)
+                .map(fictional-> {
+                    if (fictional.indexOf("(") != -1) {
+                        return fictional.substring(0, fictional.indexOf("(") - 1);
+                    }
+                    return fictional;
+                })
+                .map(this::swap)
+                .collect(Collectors.toList()));
+        return subjects;
+    }
+
+    private String swap(String name) {
+        if (name.indexOf(",") != -1) {
+            String firstname = name.substring(name.indexOf(",") + 1).trim();
+            String surname = name.substring(0, name.indexOf(",")).trim();
+            return firstname + " " + surname;
+        }
+        return name;
+    }
+}
