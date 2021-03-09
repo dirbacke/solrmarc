@@ -9,10 +9,11 @@ import org.marc4j.marc.Record;
 import org.marc4j.marc.VariableField;
 import org.solrmarc.index.SolrIndexerMixin;
 
-import org.solrmarc.mixin.helper.MediaTypeEnum;
-import org.solrmarc.mixin.helper.MediaTypeInformation;
-import org.solrmarc.mixin.helper.MediaTypeParser;
-import org.solrmarc.mixin.helper.MediaSubTypeParser;
+import org.solrmarc.mixin.ssb.helper.MediaTypeEnum;
+import org.solrmarc.mixin.ssb.helper.MediaTypeInformation;
+import org.solrmarc.mixin.ssb.helper.MediaTypeParser;
+import org.solrmarc.mixin.ssb.helper.MediaSubTypeParser;
+import org.solrmarc.mixin.ssb.utils.Commons;
 
 public class SSBCustomMixin extends SolrIndexerMixin {
     /**
@@ -37,12 +38,7 @@ public class SSBCustomMixin extends SolrIndexerMixin {
                 }
             }
         }
-        if (fullname.length() > 0 && fullname.indexOf(',') != -1) {
-            String firstname = fullname.substring(fullname.indexOf(',') + 1).trim();
-            String surname = fullname.substring(0, fullname.indexOf(',')).trim();
-            return firstname + " " + surname;
-        }
-        return fullname;
+        return Commons.swapName(fullname);
     }
 
     /**

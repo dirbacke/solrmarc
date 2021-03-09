@@ -19,3 +19,4 @@
 *.iml
 .classpath
 .metadata
+.DS_Store

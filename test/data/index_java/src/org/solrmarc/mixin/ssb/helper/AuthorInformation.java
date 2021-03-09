@@ -1,7 +1,9 @@
-package org.solrmarc.mixin.helper;
+package org.solrmarc.mixin.ssb.helper;
 
-import java.util.HashSet;
-import java.util.Set;
+import org.solrmarc.mixin.ssb.utils.Commons;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
@@ -18,29 +20,34 @@ public class AuthorInformation {
 	}
 	
 	public Set<String> getCoAuthors(String fieldNumber, char[] sections) {
-		return getSubfieldWithOtherAuthorAsSet(fieldNumber, sections, "aut");
+		return getSubfieldWithAuthorAsSet(fieldNumber, sections, "aut");
 	}
 	
 	public Set<String> getIllustrators(String fieldNumber, char[] sections) {
-        return getSubfieldWithOtherAuthorAsSet(fieldNumber, sections, "ill");
+        return getSubfieldWithAuthorAsSet(fieldNumber, sections, "ill");
     }
 
     public Set<String> getTranslators(String fieldNumber, char[] sections) {
-        return getSubfieldWithOtherAuthorAsSet(fieldNumber, sections, "trl");
+        return getSubfieldWithAuthorAsSet(fieldNumber, sections, "trl");
     }
 
     public Set<String> getOtherAuthors(String fieldNumber, char[] sections) {
-        return getSubfieldWithOtherAuthorAsSet(fieldNumber, sections, "");
+		Set<String> knownAuthors = getCoAuthors(fieldNumber, sections);
+		knownAuthors.addAll(getIllustrators(fieldNumber, sections));
+		knownAuthors.addAll(getTranslators(fieldNumber, sections));
+		Set<String> otherAuthors = getSubfieldWithAuthorAsSet(fieldNumber, sections, "");
+		otherAuthors.removeAll(knownAuthors);
+		return otherAuthors;
     }
     
-	private Set<String> getSubfieldWithOtherAuthorAsSet(String field, char[] sections, String key) {
+	private Set<String> getSubfieldWithAuthorAsSet(String field, char[] sections, String key) {
         Set<String> data = new HashSet<>();
         
         for (VariableField variableField : record.getVariableFields(field)) {
             String fieldData = getFieldData(variableField, sections);
             String type = getTypeInSubField4(variableField);
             if (key.equalsIgnoreCase(type) || isOtherKey(key)) {
-                data.add(fieldData.trim());
+                data.add(fieldData);
             }
         }
         return data;
@@ -59,15 +66,17 @@ public class AuthorInformation {
 	}
 
 	private String getFieldData(VariableField variableField, char[] sections) {
-		String fieldData = "";
+		List<String> fieldData = new ArrayList<>();
+		String data;
 		for (int i=0; i<sections.length; i++) {
 			char section = sections[i];
 			if(((DataField) variableField).getSubfield(section) != null) {
 				if (((DataField) variableField).getSubfield(section).getData() != null) {
-					fieldData += ((DataField) variableField).getSubfield(section).getData() + " ";
+					data = ((DataField) variableField).getSubfield(section).getData();
+					fieldData.add(Commons.swapName(data));
 				}
 			}
 		}
-		return fieldData.trim();
+		return fieldData.stream().collect(Collectors.joining(", "));
 	}
 }

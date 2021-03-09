@@ -1,4 +1,4 @@
-package org.solrmarc.mixin.helper;
+package org.solrmarc.mixin.ssb.helper;
 
 public enum MediaTypeEnum {
     AUDIO_BOOK,

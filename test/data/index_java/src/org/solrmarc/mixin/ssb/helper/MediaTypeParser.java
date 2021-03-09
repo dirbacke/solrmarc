@@ -1,12 +1,12 @@
-package org.solrmarc.mixin.helper;
+package org.solrmarc.mixin.ssb.helper;
 
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.VariableField;
 
 import java.util.List;
 
-import org.solrmarc.mixin.helper.MediaTypeInformation;
-import org.solrmarc.mixin.helper.MediaTypeEnum;
+import org.solrmarc.mixin.ssb.helper.MediaTypeInformation;
+import org.solrmarc.mixin.ssb.helper.MediaTypeEnum;
 
 public class MediaTypeParser {
     public String parseFieldA(MediaTypeInformation mediaInformation) {

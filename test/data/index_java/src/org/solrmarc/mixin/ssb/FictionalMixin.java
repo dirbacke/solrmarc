@@ -4,14 +4,14 @@ import org.solrmarc.index.SolrIndexerMixin;
 
 import org.marc4j.marc.Record;
 import org.solrmarc.mixin.ssb.utils.Commons;
-
+import org.solrmarc.mixin.ssb.helper.MediaTypeInformation;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class FictionalMixin extends SolrIndexerMixin {
     private Commons commons = new Commons();
     public Set<String> getFictionalPerson(final Record record) {
-        org.solrmarc.mixin.helper.MediaTypeInformation mediaInformation = new org.solrmarc.mixin.helper.MediaTypeInformation(record);
+        MediaTypeInformation mediaInformation = new MediaTypeInformation(record);
         List<String> fields = Arrays.asList("600", "697");
         Set<String> values = new HashSet<>();
         char[] sections = "ac".toCharArray();

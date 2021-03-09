@@ -1,11 +1,11 @@
 package org.solrmarc.mixin.ssb;
 
 import org.solrmarc.index.SolrIndexerMixin;
-import org.solrmarc.mixin.helper.AuthorInformation;
+import org.solrmarc.mixin.ssb.helper.AuthorInformation;
 import org.marc4j.marc.Record;
 import java.util.Set;
 
-public class SSBAuthorMixin extends SolrIndexerMixin {
+public class AuthorMixin extends SolrIndexerMixin {
 	
 	/**
 	 * getCoAuthors reads the field 700 and return a list of co-authors
