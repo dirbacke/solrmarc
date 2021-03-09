@@ -1,13 +1,15 @@
 package org.solrmarc.mixin.ssb;
 
 import org.solrmarc.index.SolrIndexerMixin;
+
 import org.marc4j.marc.Record;
+import org.solrmarc.mixin.ssb.utils.Commons;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class FictionalMixin extends SolrIndexerMixin {
-
+    private Commons commons = new Commons();
     public Set<String> getFictionalPerson(final Record record) {
         org.solrmarc.mixin.helper.MediaTypeInformation mediaInformation = new org.solrmarc.mixin.helper.MediaTypeInformation(record);
         List<String> fields = Arrays.asList("600", "697");
@@ -37,17 +39,8 @@ public class FictionalMixin extends SolrIndexerMixin {
                     }
                     return fictional;
                 })
-                .map(this::swap)
+                .map(Commons::swapName)
                 .collect(Collectors.toList()));
         return subjects;
-    }
-
-    private String swap(String name) {
-        if (name.indexOf(",") != -1) {
-            String firstname = name.substring(name.indexOf(",") + 1).trim();
-            String surname = name.substring(0, name.indexOf(",")).trim();
-            return firstname + " " + surname;
-        }
-        return name;
     }
 }

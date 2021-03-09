@@ -1,4 +1,4 @@
-package org.solrmarc.mixin;
+package org.solrmarc.mixin.ssb;
 
 import org.solrmarc.index.SolrIndexerMixin;
 import org.solrmarc.mixin.helper.AuthorInformation;
