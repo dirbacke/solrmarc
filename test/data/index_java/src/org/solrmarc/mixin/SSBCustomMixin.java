@@ -23,22 +23,22 @@ public class SSBCustomMixin extends SolrIndexerMixin {
      * @return <code>String</code> name of author
      */
     public String formatSSBAuthorName(final Record record) {
-        String fullname = "";
+        String name = "";
         if (record != null) {
             DataField field100 = ((DataField) record.getVariableField("100"));
             if (field100 != null) {
                 if (field100.getSubfield('a') != null) {
-                    fullname += field100.getSubfield('a').getData();
+                    name += field100.getSubfield('a').getData();
                 }
                 if (field100.getSubfield('b') != null) {
-                    fullname += field100.getSubfield('b').getData();
+                    name += field100.getSubfield('b').getData();
                 }
                 if (field100.getSubfield('c') != null) {
-                    fullname += field100.getSubfield('c').getData();
+                    name += field100.getSubfield('c').getData();
                 }
             }
         }
-        return Commons.swapName(fullname);
+        return Commons.swapName(name);
     }
 
     /**
@@ -67,6 +67,11 @@ public class SSBCustomMixin extends SolrIndexerMixin {
         return parseOutMediaType(mediaInformation);
     }
 
+    /**
+     * Parse out publishers name from a record
+     * @param record MARC record
+     * @return <code>String</code> containing the publishers name
+     */
     public String getSSBPublisherName(final Record record) {
         MediaTypeInformation mediaInformation = new MediaTypeInformation(record);
         String value = mediaInformation.getFieldContent("260", 'b');
@@ -74,35 +79,6 @@ public class SSBCustomMixin extends SolrIndexerMixin {
             return mediaInformation.getFieldContent("264", 'b');
         }
         return value;
-    }
-
-    public Set<String> getSSBSubject(final Record record) {
-        MediaTypeInformation mediaInformation = new MediaTypeInformation(record);
-        List<String> fields = Arrays.asList("600", "610", "630", "648", "650", "651", "697");
-        Set<String> values = new HashSet<>();
-        char[] sections = "abcdefghijklmnopqrstuvwxyz".toCharArray();
-        for (int i=0; i < fields.size(); i++) {
-            Set<String> content = mediaInformation.getFieldContentForSubject(fields.get(i), sections);
-            if (!content.isEmpty()) {
-                values.addAll(content);
-            }
-        }
-        return parseOutFictionalPersons(values);
-    }
-
-    public Set<String> getSSBSubjectWithType(final Record record) {
-        MediaTypeInformation mediaInformation = new MediaTypeInformation(record);
-        List<String> fields = Arrays.asList("600", "610", "630", "648", "650", "651", "697");
-        Set<String> values = new HashSet<>();
-        char[] sections = "abcdefghijklmnopqrstuvwxyz".toCharArray();
-        for (int i=0; i < fields.size(); i++) {
-            Set<String> content = mediaInformation.getFieldContentWithType(fields.get(i), sections);
-            if (!content.isEmpty()) {
-                values.addAll(content);
-            }
-        }
-
-        return parseOutFictionalPersons(values);
     }
 
     private String parseOutMediaSubType(MediaTypeInformation mediaInformation) {

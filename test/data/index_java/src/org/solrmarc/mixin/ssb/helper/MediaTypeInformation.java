@@ -71,10 +71,6 @@ public class MediaTypeInformation {
         return getSubfieldWithSubjectAsSet(fieldNumber, sections);
     }
 
-    public Set<String> getFieldContentWithType(String fieldNumber, char[] sections) {
-        return getSubfieldWithTypeAsSet(fieldNumber, sections);
-    }
-
     public boolean isMp3() {
         String field300 = getLowerCaseSubfield("300", 'a');
         String field939b = getLowerCaseSubfield("939", 'b');
@@ -122,23 +118,6 @@ public class MediaTypeInformation {
         return data;
     }
 
-    private Set<String> getSubfieldWithTypeAsSet(String field, char[] sections) {
-       Set<String> data = new HashSet<>();
-       for (VariableField variableField : record.getVariableFields(field)) {
-           String fieldData = getFieldData((DataField) variableField, sections);
-
-           String type = "";
-           if (((DataField) variableField).getSubfield('2') != null) {
-               type = ((DataField) variableField).getSubfield('2').getData();
-               if (!type.isEmpty()) {
-                   type = " -- " + type;
-               }
-           }
-           data.add(fieldData.trim() + type);
-       }
-       return data;
-    }
-
     private String getSubfield(String field, char section) {
         String data = "";
         for (VariableField variableField : record.getVariableFields(field)) {
@@ -165,7 +144,7 @@ public class MediaTypeInformation {
 
     private String getFieldData(DataField field, char[] sections) {
         String fieldData = "";
-        for ( char section : sections) {
+        for (char section : sections) {
             if(field.getSubfield(section) != null) {
                 if (field.getSubfield(section).getData() != null) {
                     fieldData += field.getSubfield(section).getData() + " ";
