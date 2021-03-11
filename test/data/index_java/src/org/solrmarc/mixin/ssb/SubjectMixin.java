@@ -12,13 +12,14 @@ import java.util.stream.Collectors;
 
 public class SubjectMixin extends SolrIndexerMixin {
     private static final char[] SECTIONS = "abcdefghijklmnopqrstuvwxyz".toCharArray();
+    private static final char[] LOCAL_SECTIONS = "cefghijklmnopqrstuvwxyz".toCharArray();
 
     /**
      * Get all subjects that doesn't have a fictional character in them.
      * @param record the full Marc record
      * @return a list of subject from specified fields
      */
-    public List<String> getSubject(final Record record) {
+    public List<String> getSubjects(final Record record) {
         List<String> subjects = new ArrayList<>();
         List<String> fields = Arrays.asList("600", "610", "630", "648", "650", "651");
         return fields.stream()
@@ -33,13 +34,30 @@ public class SubjectMixin extends SolrIndexerMixin {
      * @param record The full Marc record
      * @return a list of keywords
      */
-    public List<String> getKeywordForSubject(final Record record) {
+    public List<String> getKeywordsForSubjects(final Record record) {
         List<String> fields = Arrays.asList("600", "610", "630", "648", "650", "651");
         return fields.stream()
                 .map(field->
                     parseRecordForKeywords(record, field))
                 .flatMap(keys-> keys.stream())
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Get local subjects
+     * @param record Marc record
+     * @return <code>Set</code> of local subject string
+     */
+    public Set<String> getLocalSubjects(final Record record) {
+        Set<String> localSubjects = new HashSet<>();
+        for (VariableField variableField : record.getVariableFields("697")) {
+            if (!isFictionalPerson((DataField) variableField)) {
+                for (char section : LOCAL_SECTIONS) {
+                    localSubjects.addAll(getLocalSubjects((DataField) variableField, section));
+                }
+            }
+        }
+        return localSubjects;
     }
 
     private List<String> parseRecordForSubject(Record record, String field) {
@@ -106,5 +124,16 @@ public class SubjectMixin extends SolrIndexerMixin {
         return dataField.getSubfields().stream()
                 .map(Subfield::getData)
                 .anyMatch(data->data.contains("fiktiv"));
+    }
+
+    private Set<String> getLocalSubjects(DataField dataField, char section) {
+        Set<String> subjects = new HashSet<>();
+        if (dataField != null) {
+            subjects.addAll(dataField.getSubfields(section).stream()
+                    .map(Subfield::getData)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList()));
+        }
+        return subjects;
     }
 }
